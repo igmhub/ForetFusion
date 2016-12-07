@@ -15,10 +15,17 @@ First install the module by running
 ./setup.py install
 ```
 
-Then the driver should be run as
+or to leaving things within your own area on e.g. NERSC:
 
 ```
-mpirun -np 4 ./exec/ff_driver.py
+./setup.py install --user
 ```
+
+Then the driver should be run like this, specifying config file
+
+```
+mpirun -np 4 ./exec/ff_driver.py config/nersc.ini
+```
+
 
 

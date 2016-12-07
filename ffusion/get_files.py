@@ -2,6 +2,7 @@
 
 import os
 import fitsio
+import numpy as np
 import pandas as pd
 
 def read_sub_fits(dir_fits, file_name):
@@ -18,7 +19,7 @@ def read_sub_fits(dir_fits, file_name):
 
 
 
-def read_fits(dir_fits, file_name, fits_cols, maxnum):
+def read_fits(dir_fits, file_name, fits_cols, maxnum=0):
     """Read selected columns in the .fits file. Return a DataFrame"""
     file_name = os.path.join(dir_fits, file_name)
     if not os.path.isfile(file_name):
@@ -36,6 +37,26 @@ def read_fits(dir_fits, file_name, fits_cols, maxnum):
         df=df[:maxnum]
     print "Read",maxnum,"entries from ",file_name
 
+    return df
+
+
+def read_spframe(dir_fits, triplet):
+    plate,mjd,fiber=triplet
+    fname=dir_fits+"/%i/spPlate-%i-%i.fits"%(plate,plate,mjd)
+    if not os.path.isfile(fname):
+        print('File not found: {}'.format(file_name))
+        sys.exit(1)
+    fits       = fitsio.FITS(fname)
+    #http://stackoverflow.com/questions/30283836/
+    # creating-pandas-dataframe-from-numpy-array-leads-to-strange-errors
+    flux = fits[1].read()[fiber-1]
+    ivar = fits[2].read()[fiber-1]
+    andmask = fits[3].read()[fiber-1]
+    ormask = fits[4].read()[fiber-1]
+    head=fitsio.read_header(fname)
+    loglam = head['COEFF0']+head['COEFF1']*np.arange(len(flux))
+    fits_to_df = {'flux':flux, 'ivar':ivar,'and_mask':andmask,'or_mask':ormask,'loglam':loglam}
+    df = pd.DataFrame(fits_to_df)
     return df
 
 

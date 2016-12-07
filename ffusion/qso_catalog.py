@@ -36,7 +36,7 @@ class Ini_params():
         self.show_plots  = False                          #must be False when using mpi
         self.need_files  = False                          #If files needed get them from bnl-cluster
 
-        self.dir_spec    = 'spectra/'
+        self.dir_spec    = '/global/projecta/projectdirs/sdss/staging/ebosswork/eboss/spectro/redux/v5_10_0/'
         self.dir_v5_10   = 'v5_10_0/spectra/'
         self.pix_dir     = 'healpix/'
 
@@ -182,7 +182,7 @@ class QSO_catalog(Ini_params):
 
 
 
-    def get_files(self, thing_id ='thing_id'):
+    def get_dict(self, thing_id ='thing_id'):
         """Given a THING_ID locate names of the files,
             if we dont have the files, get them."""
 
@@ -193,13 +193,14 @@ class QSO_catalog(Ini_params):
         plates, mjds, fiberids, z, zerr, zwarning = list(map(get_names, spall_names))
 
         name_file  = lambda p,m,f: '{0}/spec-{0}-{1}-{2}.fits'.format(p, m, str(f).zfill(4))
-        qso_files  = list(map(name_file, plates, mjds, fiberids))
+        qso_trips  = zip(plates, mjds, fiberids)
 
         spall_val  = list(zip(plates, mjds, fiberids, z, zerr, zwarning))
-        dict_qso   = dict(zip(qso_files, spall_val))
+        dict_qso   = dict(zip(qso_trips, spall_val))
 
         #just in case we need and dont have the files stored, get them from the bnl-cluster
         if self.need_files:
+            print "This is broken!!"
             plates = list(map(str, plates))
             for plate, file in zip(plates, qso_files):
                 if not os.path.isfile(self.dir_spec + file): self.get_bnl_files(plate, file)
@@ -239,7 +240,7 @@ class QSO_catalog(Ini_params):
         comp_chisq = lambda x, y: np.sum(x**2 *y)/len(x)
 
         for fqso in list(dict_qso.keys()):
-            df_file = read_fits(self.dir_spec , fqso, self.spec_cols).set_index('loglam')
+            df_file = read_spframe(self.dir_spec, fqso).set_index('loglam')
             chisq   = comp_chisq(df_file['flux'].values, df_file['ivar'].values)
 
             if chisq > self.trim_chisq:
@@ -261,20 +262,22 @@ class QSO_catalog(Ini_params):
         or_mask      = 'or_mask_%s'
         and_mask     = 'and_mask_%s'
 
-        for fqso in list(dict_file.keys()):
+        for fqsot in list(dict_file.keys()):
+            fqso="%i-%i-%i"%fqsot
             columns = {'flux': flux%(fqso), 'ivar': ivar%(fqso), 'or_mask': or_mask%(fqso), 'and_mask': and_mask%(fqso)}
-            dict_file[fqso].rename(columns= columns, inplace=True)
+            dict_file[fqsot].rename(columns= columns, inplace=True)
 
         df_coadd = pd.concat(dict_file.values(), axis=1).fillna(0)
         df_coadd['flux_ivar'] = 0
         df_coadd['ivar']      = 0
 
-        for _, fqso in enumerate(dict_file.keys()):
+        for _, fqsot in enumerate(dict_file.keys()):
+            fqso="%i-%i-%i"%fqsot
             df_coadd['flux_ivar']    += df_coadd[flux%(fqso)]*df_coadd[ivar%(fqso)]
             df_coadd['ivar']         += df_coadd[ivar%(fqso)]
 
-        df_coadd['and_mask'] = (reduce(lambda x, y: x & y, [df_coadd[and_mask%(i)].astype(int) for i in dict_file.keys()]))
-        df_coadd['or_mask']  = (reduce(lambda x, y: x | y, [df_coadd[or_mask%(i)].astype(int)  for i in dict_file.keys()]))
+        df_coadd['and_mask'] = (reduce(lambda x, y: x & y, [df_coadd[and_mask%("%i-%i-%i"%i)].astype(int) for i in dict_file.keys()]))
+        df_coadd['or_mask']  = (reduce(lambda x, y: x | y, [df_coadd[or_mask%("%i-%i-%i"%i)].astype(int)  for i in dict_file.keys()]))
         df_coadd['coadd']    = df_coadd['flux_ivar'] / df_coadd['ivar']
 
         self.df_coadd = df_coadd.fillna(0)

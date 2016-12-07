@@ -57,10 +57,10 @@ def initQSOcats(dir_files, file_name, maxNobj, MPIt):
         QSOs.rep_thid    = 1
         QSOs.write_master= True
         QSOs.write_ffits = True
-        QSOs.show_plots  = True
+        QSOs.show_plots  = False
         QSOs.write_names = False
         QSOs.write_hist  = True
-        QSOs.need_files  = True
+        QSOs.need_files  = False
 
         QSOs.own_filter()
         #QSOs.filtering_qsos(condition= QSOs.condition)

@@ -3,15 +3,14 @@
 import os
 import fitsio
 import pandas as pd
-from mpi4py import MPI
-
 
 def read_sub_fits(dir_fits, file_name):
     """Read the subsample of spAll we are interested in. Return a DataFrame"""
     file_name = os.path.join(dir_fits, file_name)
     if not os.path.isfile(file_name):
         print ('File not found: {}'.format(file_name))
-        MPI.COMM_WORLD.Abort()
+        #MPI.COMM_WORLD.Abort()
+        sys.exit(1)
 
     print ('Reading file...')
     df = pd.read_csv(file_name, sep=',')

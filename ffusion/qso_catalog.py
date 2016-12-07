@@ -8,7 +8,7 @@ from collections import defaultdict
 import seaborn as sns
 import fitsio
 
-pd.set_option('display.mpl_style', 'default')
+#pd.set_option('display.mpl_style', 'default')
 
 params1 = {'backend': 'pdf',
                'axes.labelsize': 15,
@@ -141,7 +141,8 @@ class QSO_catalog(Ini_params):
         phi_rad   = lambda ra : ra*np.pi/180.
         theta_rad = lambda dec: (90.0 - dec)*np.pi/180.
 
-        self.df_qsos['PIX'] = hp.ang2pix(self.Npix_side, theta_rad(self.df_qsos['DEC']), phi_rad(self.df_qsos['RA']))
+        pixs = hp.ang2pix(self.Npix_side, theta_rad(self.df_qsos['DEC']), phi_rad(self.df_qsos['RA']))
+        self.df_qsos.loc[:,'PIX'] = pixs
         unique_pixels  = self.df_qsos['PIX'].unique()
         print ('Unique pixels: ', len(unique_pixels))
 

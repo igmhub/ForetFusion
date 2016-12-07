@@ -19,7 +19,8 @@ def main():
 
     dir_files = config.get("Catalog", "directory")
     file_name = config.get("Catalog", "filename")
-    QSOs, chunks = initQSOcats(dir_files, file_name, MPIt)
+    maxNobj = config.getint("Catalog", "maxNobj")
+    QSOs, chunks = initQSOcats(dir_files, file_name, maxNobj, MPIt)
 
     if QSOs.write_hist: 
         QSOs.write_stats_open(rank)
@@ -43,14 +44,14 @@ def main():
     print  "Done."
     sys.exit(0)
 
-def initQSOcats(dir_files, file_name, MPIt):
+def initQSOcats(dir_files, file_name, maxNobj, MPIt):
 
     spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z','Z_ERR','ZWARNING']
 
     useMPI,comm,rank,size = MPIt
 
     if rank == 0:
-        df_fits = ff.read_fits(dir_files, file_name, spall_cols)
+        df_fits = ff.read_fits(dir_files, file_name, spall_cols, maxNobj)
         QSOs    = ff.QSO_catalog(df_fits, verbose = True)
 
         QSOs.rep_thid    = 1

@@ -18,7 +18,7 @@ def read_sub_fits(dir_fits, file_name):
 
 
 
-def read_fits(dir_fits, file_name, fits_cols):
+def read_fits(dir_fits, file_name, fits_cols, maxnum):
     """Read selected columns in the .fits file. Return a DataFrame"""
     file_name = os.path.join(dir_fits, file_name)
     if not os.path.isfile(file_name):
@@ -32,6 +32,10 @@ def read_fits(dir_fits, file_name, fits_cols):
     fits_read  = fits[1].read(columns= fits_cols)
     fits_to_df = {col:fits_read[col].byteswap().newbyteorder() for col in fits_cols}
     df = pd.DataFrame(fits_to_df)
+    if (maxnum>0):
+        df=df[:maxnum]
+    print "Read",maxnum,"entries from ",file_name
+
     return df
 
 

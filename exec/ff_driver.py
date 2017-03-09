@@ -7,7 +7,6 @@
 """
 
 
-import numpy as np
 import  ffusion as ff
 from ConfigParser import ConfigParser 
 import sys
@@ -15,15 +14,8 @@ import sys
 def main():
     config = initConfig()
     MPIt = initMPI(config)
-    useMPI, comm,rank,size = MPIt
+    ff.automatic ()
 
-    dir_files = config.get("Catalog", "directory")
-    file_name = config.get("Catalog", "filename")
-    maxNobj = config.getint("Catalog", "maxNobj")
-    QSOs, chunks = initQSOcats(dir_files, file_name, maxNobj, MPIt)
-
-    if QSOs.write_hist: 
-        QSOs.write_stats_open(rank)
     
     if useMPI:
         chunk_pix  = comm.scatter(chunks, root=0)
@@ -48,7 +40,6 @@ def initQSOcats(dir_files, file_name, maxNobj, MPIt):
 
     spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z','Z_ERR','ZWARNING']
 
-    useMPI,comm,rank,size = MPIt
 
     if rank == 0:
         df_fits = ff.read_fits(dir_files, file_name, spall_cols, maxNobj)

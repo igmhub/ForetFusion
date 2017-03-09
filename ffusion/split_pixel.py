@@ -10,8 +10,10 @@ that satisfy the bit condition and also
     coadd again and get new chisq
 
 """
-
+import pandas as pd
 def split_pixel(pixel, Qsos):
+    #all coadds have the same lambda, I'll change this later
+    lam = pd.DataFrame([3.63 + i*0.0001 for i in range(3850)], columns=['lam']).set_index(['lam'])
     for i, lpix in enumerate(pixel[:]):
         thingid_repeat = Qsos.pix_uniqueid(lpix)
         if not thingid_repeat: continue
@@ -28,6 +30,9 @@ def split_pixel(pixel, Qsos):
 
             if len_files == 0: continue
             dfall_qsos = Qsos.coadds(dict_file)
+	    dfall_qsos = pd.concat([lam, dfall_qsos], axis=1, join_axes=[lam.index]).fillna(value=0)
+	    #print dfall_qsos[dfall_qsos['coadd'] != 0]
+	    #print len(dfall_qsos)
 
             if Qsos.write_ffits:  result.append((th_id, dfall_qsos))
             if Qsos.show_plots:   Qsos.plot_coadds(dict_chisq)

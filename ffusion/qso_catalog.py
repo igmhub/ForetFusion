@@ -130,7 +130,7 @@ class QSO_catalog(Ini_params):
             a.append(self.searching_quasars(targ, bits))
         self.df_qsos = self.df_fits[reduce(lambda x, y: x | y, a)].copy()
 
-	self.df_qsos = self.df_qsos[self.df_qsos['Z'] > 2]
+	#self.df_qsos = self.df_qsos[self.df_qsos['Z'] > 2]
 	# This is going to be an option on the parsers
 
         if self.verbose: self.print_filter_qsos(self.df_qsos, 'Both')

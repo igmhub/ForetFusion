@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 import fitsio
 import numpy as np
 import pandas as pd
@@ -44,7 +44,7 @@ def read_spframe(dir_fits, triplet):
     plate,mjd,fiber=triplet
     fname=dir_fits+"/%i/spPlate-%i-%i.fits"%(plate,plate,mjd)
     if not os.path.isfile(fname):
-        print('File not found: {}'.format(file_name))
+        print('File not found: {}'.format(fname))
         sys.exit(1)
     fits       = fitsio.FITS(fname)
     #http://stackoverflow.com/questions/30283836/

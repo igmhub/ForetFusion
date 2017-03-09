@@ -36,7 +36,8 @@ class Ini_params():
         self.show_plots  = False                          #must be False when using mpi
         self.need_files  = False                          #If files needed get them from bnl-cluster
 
-        self.dir_spec    = '/global/projecta/projectdirs/sdss/staging/ebosswork/eboss/spectro/redux/v5_10_0/'
+#        self.dir_spec    = '/global/projecta/projectdirs/sdss/staging/ebosswork/eboss/spectro/redux/v5_10_0/'
+	self.dir_spec	= '/global/projecta/projectdirs/sdss/eBOSS/testFiles'
         self.dir_v5_10   = 'v5_10_0/spectra/'
         self.pix_dir     = 'healpix/'
 

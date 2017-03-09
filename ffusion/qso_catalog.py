@@ -130,6 +130,9 @@ class QSO_catalog(Ini_params):
             a.append(self.searching_quasars(targ, bits))
         self.df_qsos = self.df_fits[reduce(lambda x, y: x | y, a)].copy()
 
+	self.df_qsos = self.df_qsos[self.df_qsos['Z'] > 2]
+	# This is going to be an option on the parsers
+
         if self.verbose: self.print_filter_qsos(self.df_qsos, 'Both')
         return 0
 
@@ -368,9 +371,9 @@ class QSO_catalog(Ini_params):
         data['PLATE']     = np.array(plate,           dtype='i4')
         data['MJD']       = np.array(mjd,             dtype='i4')
         data['FIBERID']   = np.array(fiberid,         dtype='i4')
-        data['ZWARNING']  = np.array(z_war,           dtype='i4')
-        data['Z_ERR']     = np.array(z_err,           dtype='f4')
-        data['Z']         = np.array(zshift,          dtype='f4')
+        #data['ZWARNING']  = np.array(z_war,           dtype='i4')
+        #data['Z_ERR']     = np.array(z_err,           dtype='f4')
+        #data['Z']         = np.array(zshift,          dtype='f4')
 
         if self.verbose: print (' ... Writing MASTER-FITS file')
         os.system("rm master_file.fits")

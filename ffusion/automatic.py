@@ -87,7 +87,6 @@ def processPixel(pixel, pixlist):
         am=np.zeros(Np,dtype='i4')
         om=np.zeros(Np,dtype='i4')
         for tc,trip in enumerate(subl):
-            print trip
             ar=read_spframe(st.spPlate_dir,trip)
             ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/st.logl_step+0.5)])
             fl[ndx]+=ar['flux']*ar['ivar']

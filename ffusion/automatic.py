@@ -73,7 +73,7 @@ def processPixel(pixel, pixlist):
         for tc,trip in enumerate(subl):
             print trip
             ar=read_spframe(st.spPlate_dir,trip)
-            ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/o.logl_step+0.5)])
+            ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/st.logl_step+0.5)])
             fl[ndx]+=ar['flux']*ar['ivar']
             iv[ndx]+=ar['ivar']
             if tc==0:
@@ -87,13 +87,17 @@ def processPixel(pixel, pixlist):
         Iv[:,ii]=iv
         Am[:,ii]=am
         Om[:,ii]=om
+        ii+=1
     ## now just save the bloody thing
     file_name = os.path.join(st.pix_dir, 'pix_%i.fits'%(pixel))
     fits = fitsio.FITS(file_name, 'rw', clobber=True)
     ## first thingids
-    tids=np.array([p[0] for p in pixlist],dtype=('THING_ID','i4'))
+    tids=np.array([p[0] for p in pixlist])# ,dtype=[('THING_ID','i4')])
     fits.write(tids, header={},
                extname="THING_ID_MAP")
-    lams=np.arrage(loga, dtype=('LOGLAM','i4'))
+    lams=np.array(loga)#, dtype=[('LOGLAM','f4')])
     fits.write(lams,header={}, extname="LOGLAM_MAP")
-    
+    fits.write(Fl, header={}, extname="FLUX")
+    fits.write(Iv, header={}, extname="IVAR")
+    fits.write(Am, header={}, extname="ANDMASK")
+    fits.write(Om, header={}, extname="ORMASK")

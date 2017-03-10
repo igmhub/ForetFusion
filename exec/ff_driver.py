@@ -15,63 +15,9 @@ def main():
     config = initConfig()
     MPIt = initMPI(config)
     ff.automatic ()
-
-    
-    if useMPI:
-        chunk_pix  = comm.scatter(chunks, root=0)
-    else:
-        chunk_pix = chunks[0]
-
-    ff.split_pixel(chunk_pix, QSOs)
-    if useMPI:
-        comm.Barrier()
-        all_info  = comm.gather(QSOs.all_info, root=0)
-    else:
-        all_info=[QSOs.all_info]
-
-    if QSOs.write_hist: QSOs.write_stats_close()
-    if rank == 0:
-        if QSOs.write_hist and QSOs.show_plots: QSOs.plot_stats(size)
-        if QSOs.write_master: QSOs.master_fits(all_info)
-    print  "Done."
+    print "Done"
     sys.exit(0)
 
-def initQSOcats(dir_files, file_name, maxNobj, MPIt):
-
-    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z','Z_ERR','ZWARNING']
-
-
-    if rank == 0:
-        df_fits = ff.read_fits(dir_files, file_name, spall_cols, maxNobj)
-        QSOs    = ff.QSO_catalog(df_fits, verbose = True)
-
-        QSOs.rep_thid    = 1
-        QSOs.write_master= True
-        QSOs.write_ffits = True
-        QSOs.show_plots  = False
-        QSOs.write_names = False
-        QSOs.write_hist  = True
-        QSOs.need_files  = False
-
-        QSOs.own_filter()
-        #QSOs.filtering_qsos(condition= QSOs.condition)
-        unique_pixels = QSOs.adding_pixel_column()
-        #print (QSOs.df_qsos.query('PIX == 6219 & THING_ID == 77964771'))
-
-        if QSOs.write_names: QSOs.write_file_names()
-
-        lenpix = len(unique_pixels)
-        nchunk = int(np.ceil(lenpix*1./size))
-        chunks = [unique_pixels[i:i+ nchunk] for i in range(0, lenpix, nchunk)]
-    else:
-        chunks = []
-        QSOs   = None
-
-    if useMPI:
-        QSOs = comm.bcast(QSOs, root=0)
-
-    return QSOs, chunks
-    
 
 def initConfig():
     if len(sys.argv)!=2:

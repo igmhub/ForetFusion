@@ -11,7 +11,7 @@ def automatic ():
     for i,pixinfo in enumerate(ltodo):
         if (i%st.size==st.rank):
             processPixel(*pixinfo)
-
+    
 
 
         
@@ -21,13 +21,16 @@ def loadDRQandPixelize():
         drq = read_fits(st.DRQ, spall_cols, st.maxNobj)
         ## first filter for quasars
         #w=np.where(drq['CLASS']=="QSO" & (drq['OBJTYPE']=='QSO' | drq['OBJTYPE']=='QSO') & drq['THING_ID']!=-1)
-        #drq=drq[w]
+        w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
+        drq=drq[w]
         print "We have ",len(drq)," quasars after filtering."
         phi_rad   = lambda ra : ra*np.pi/180.
         theta_rad = lambda dec: (90.0 - dec)*np.pi/180.
         pixs = hp.ang2pix(st.Nside, theta_rad(drq['DEC']), phi_rad(drq['RA']))
         # find unique pixels
         uniqpix=set(pixs)
+        print "We have ",len(uniqpix),"unique pixels."
+        print "We have ",len(drq), "observations with ", len(set(drq['THING_ID'])), " unique thing ids."
         outlist=[]
         for pix in uniqpix:
             # first find which one belong to this pixel
@@ -47,13 +50,26 @@ def loadDRQandPixelize():
                     obslist.append((p,m,f))
                 pixlist.append((ctid,obslist))
             outlist.append((pix,pixlist))
+        saveMasterFile (outlist)
     if st.useMPI:
         cchunk=st.comm.scatter(outlist,root=0) ## make sure this is the right thing
     else:
         cchunk=outlist
     return cchunk
-    
 
+def saveMasterFile (outlist):
+    outl=[]
+    for pix, pixlist in outlist:
+        for tid,trips in pixlist:
+            for p,m,f in trips:
+                outl.append((pix,tid,p,m,f))
+    outl=np.array(outl, dtype=[('THING_ID','i4'), ('PIX','i4'),('PLATE','i4'), ('MJD','i4'),('FIBER','i4')])
+    file_name = os.path.join(st.rootdir, 'master.fits')
+    fits = fitsio.FITS(file_name, 'rw', clobber=True)
+    fits.write(outl, header={},
+               extname="MASTER TABLE")
+    fits.close()
+    
 def processPixel(pixel, pixlist):
     print "processing pixel", pixel
     Nq=len(pixlist)
@@ -101,3 +117,4 @@ def processPixel(pixel, pixlist):
     fits.write(Iv, header={}, extname="IVAR")
     fits.write(Am, header={}, extname="ANDMASK")
     fits.write(Om, header={}, extname="ORMASK")
+    fits.close()

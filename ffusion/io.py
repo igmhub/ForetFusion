@@ -8,7 +8,7 @@ def read_fits(file_name, fits_cols, maxnum=0):
     """Read selected columns in the .fits file. Return a DataFrame"""
     if not os.path.isfile(file_name):
         print('File not found: {}'.format(file_name))
-        MPI.COMM_WORLD.Abort()
+        exit(1)
     fits       = fitsio.FITS(file_name)
     #http://stackoverflow.com/questions/30283836/
     # creating-pandas-dataframe-from-numpy-array-leads-to-strange-errors

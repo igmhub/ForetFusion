@@ -13,7 +13,10 @@ import sys
 
 def main():
     config = initConfig()
-    MPIt = initMPI(config)
+    ff.settings.updateSettings(config)
+    if ff.settings.useMPI:
+        comm,rank,size=initMPI()
+        ff.settings.setMPI(comm,rank,size)
     ff.automatic ()
     print "Done"
     sys.exit(0)
@@ -27,18 +30,12 @@ def initConfig():
     config.read(sys.argv[1])
     return config
 
-def initMPI(config):
-    useMPI=config.getboolean("Main","MPI")
-    if useMPI:
-        from mpi4py import MPI
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-        size = comm.Get_size()
-    else:
-        comm = None
-        rank = 0
-        size = 1
-    return useMPI, comm,rank,size
+def initMPI():
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    return comm,rank,size
 
 
 

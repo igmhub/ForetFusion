@@ -57,9 +57,9 @@ def read_spcframe(dir_fits, triplet):
         head=fitsio.read_header(fname)
         ddays=mjd-head['MJD']
         if (ddays<0) or (ddays>5):
-              print "Skipping ",mjd,head['MJD'],ddays
+              #print "Skipping ",mjd,head['MJD'],ddays
               continue
-        print "Keeping:",mjd,head['MJD'],ddays
+        #print "Keeping:",mjd,head['MJD'],ddays
         fits = fitsio.FITS(fname)
         flux = fits[0].read()[fiber-1]
         ivar = fits[1].read()[fiber-1]

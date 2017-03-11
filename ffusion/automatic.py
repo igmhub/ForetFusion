@@ -8,14 +8,19 @@ import numpy as np
 import os, fitsio
 import healpy as hp
 
+
 # we let drive initialize MPI everything else we do here
 def automatic ():
     ltodo = loadDRQandPixelize()
-    for i,pixinfo in enumerate(ltodo):
-        if (i%st.size==st.rank):
-            processPixel(*pixinfo)
+    if (st.useMultiprocessing):
+        import multiprocessing
+        pool=multiprocessing.Pool(processes=st.useMultiprocessing)
+        pool.map(processPixel, ltodo)
+    else:
+        for i,pixinfo in enumerate(ltodo):
+            if (i%st.size==st.rank):
+                processPixel(pixinfo)
     
-
 def loadDRQandPixelize():
     spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z']
     if st.rank == 0:
@@ -56,11 +61,11 @@ def loadDRQandPixelize():
                 pixlist.append((ctid,obslist))
             outlist.append((pix,pixlist))
         saveMasterFile (outlist)
-    if st.useMPI:
-        cchunk=st.comm.scatter(outlist,root=0) ## make sure this is the right thing
     else:
-        cchunk=outlist
-    return cchunk
+        outlist=[]
+    if (st.useMPI):
+        outlist=st.comm.broadcast(outlist, root=0)
+    return outlist
 
 def saveMasterFile (outlist):
     outl=[]
@@ -75,7 +80,8 @@ def saveMasterFile (outlist):
                extname="MASTER TABLE")
     fits.close()
     
-def processPixel(pixel, pixlist):
+def processPixel(pixinfo):
+    pixel, pixlist=pixinfo
     print "processing pixel", pixel
     Nq=len(pixlist)
     loga=np.arange(st.logl_min, st.logl_max, st.logl_step)

@@ -13,8 +13,6 @@ def automatic ():
             processPixel(*pixinfo)
     
 
-
-        
 def loadDRQandPixelize():
     spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z']
     if st.rank == 0:

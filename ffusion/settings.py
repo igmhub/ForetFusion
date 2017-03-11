@@ -3,6 +3,7 @@
 #
 
 useMPI,comm,rank,size = False, None, 0, 1
+useMultiprocessing = 0 #use multiprocessing instead of MPI
 rootdir="."
 DRQ="/global/projecta/projectdirs/sdss/eBOSS/DR14Q_v1_1.fits"
 #spPlate_dir= '/global/projecta/projectdirs/sdss/staging/ebosswork/eboss/spectro/redux/v5_10_0/'
@@ -20,9 +21,12 @@ logl_step=1e-4
 def updateSettings(config):
     global useMPI, comm, rank, size, rootdir, DRQ, spPlate_dir, \
         pix_dir, maxNobj, Nside, logl_min, logl_max, logl_step,\
-        min_z, max_z, use_spCFrame
+        min_z, max_z, use_spCFrame, useMultiprocessing
     
     useMPI=config.getboolean("Main","MPI")
+    useMultiprocessing=config.getint("Main", "Multiprocessing")
+    if useMPI and useMultiprocessing:
+        print "Cannot have both MPI and multiprocessing"
     spPlate_dir=config.get("Input","DRQ")
     spPlate_dir=config.get("Input","spPlate_dir")
     use_spCFrame=config.getboolean("Input","use_spCFrame")

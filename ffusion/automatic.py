@@ -3,8 +3,11 @@
 #
 
 import settings as st
-from io import *
+import io
+import numpy as np
+import os, fitsio
 import healpy as hp
+
 # we let drive initialize MPI everything else we do here
 def automatic ():
     ltodo = loadDRQandPixelize()
@@ -16,7 +19,7 @@ def automatic ():
 def loadDRQandPixelize():
     spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z']
     if st.rank == 0:
-        drq = read_fits(st.DRQ, spall_cols, st.maxNobj)
+        drq = io.read_fits(st.DRQ, spall_cols, st.maxNobj)
         ## first filter for quasars
         #w=np.where(drq['CLASS']=="QSO" & (drq['OBJTYPE']=='QSO' | drq['OBJTYPE']=='QSO') & drq['THING_ID']!=-1)
         w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
@@ -89,15 +92,23 @@ def processPixel(pixel, pixlist):
         am=np.zeros(Np,dtype='i4')
         om=np.zeros(Np,dtype='i4')
         for tc,trip in enumerate(subl):
-            ar=read_spframe(st.spPlate_dir,trip)
-            ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/st.logl_step+0.5)])
-            fl[ndx]+=ar['flux']*ar['ivar']
-            iv[ndx]+=ar['ivar']
-            if tc==0:
-                am[ndx]=ar['andmask']
+            if st.use_spCFrame:
+                lar=io.read_spcframe(st.spPlate_dir,trip)
             else:
-                am[ndx]=(am[ndx]&ar['andmask'])
-            om[ndx]=(om[ndx]|ar['ormask'])
+                lar=[io.read_spplate(st.spPlate_dir,trip)]
+            for ar in lar:
+                ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/st.logl_step+0.5)])
+                wf=np.where((ndx>=0) & (ndx<len(fl)))
+                ndx=ndx[wf]
+                ar=ar[wf]
+                fl[ndx]+=ar['flux']*ar['ivar']
+                iv[ndx]+=ar['ivar']
+
+                if tc==0:
+                    am[ndx]=ar['andmask']
+                else:
+                    am[ndx]=(am[ndx]&ar['andmask'])
+                om[ndx]=(om[ndx]|ar['ormask'])
         ndx=np.where(iv>0)
         fl[ndx]/=iv[ndx]
         Fl[:,ii]=fl

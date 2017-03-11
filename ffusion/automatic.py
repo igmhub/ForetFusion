@@ -24,6 +24,10 @@ def loadDRQandPixelize():
         w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
         drq=drq[w]
         print "We have ",len(drq)," quasars after filtering."
+        print st.min_z, st.max_z
+        w=np.where((drq['Z']>st.min_z) & (drq['Z']<st.max_z))
+        drq=drq[w]
+        print "we have", len(drq)," quasars after z filtering."
         phi_rad   = lambda ra : ra*np.pi/180.
         theta_rad = lambda dec: (90.0 - dec)*np.pi/180.
         pixs = hp.ang2pix(st.Nside, theta_rad(drq['DEC']), phi_rad(drq['RA']))
@@ -66,7 +70,7 @@ def saveMasterFile (outlist):
     outl=np.array(outl, dtype=[('THING_ID','i4'), ('PIX','i4'),('PLATE','i4'), ('MJD','i4'),('FIBER','i4')])
     file_name = os.path.join(st.rootdir, 'master.fits')
     fits = fitsio.FITS(file_name, 'rw', clobber=True)
-    fits.write(outl, header={},
+    fits.write(outl, header={"NSIDE":st.Nside},
                extname="MASTER TABLE")
     fits.close()
     

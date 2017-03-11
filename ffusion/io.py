@@ -2,6 +2,7 @@
 
 import os, sys
 import fitsio
+from glob import glob
 import numpy as np
 
 def read_fits(file_name, fits_cols, maxnum=0):
@@ -16,7 +17,7 @@ def read_fits(file_name, fits_cols, maxnum=0):
     return fits_read[:maxnum]
 
 
-def read_spframe(dir_fits, triplet):
+def read_spplate(dir_fits, triplet):
     plate,mjd,fiber=triplet
     fname=dir_fits+"/%i/spPlate-%i-%i.fits"%(plate,plate,mjd)
     if not os.path.isfile(fname):
@@ -38,5 +39,42 @@ def read_spframe(dir_fits, triplet):
     ar['andmask']=andmask
     ar['ormask']=ormask
     return ar
+
+
+def read_spcframe(dir_fits, triplet):
+    plate,mjd,fiber=triplet
+    camera=1
+    if fiber>500:
+        fiber-=500
+        camera=2
+    fnameglob=dir_fits+"/%i/spCFrame-?%i-*.fits"%(plate,camera)
+    fnamelist=glob(fnameglob)
+    if len(fnamelist)==0:
+        print("No files found:",fnameglob)
+        sys.exit(1)
+    arl=[]
+    for fname in fnamelist:
+        head=fitsio.read_header(fname)
+        ddays=mjd-head['MJD']
+        if (ddays<0) or (ddays>5):
+              print "Skipping ",mjd,head['MJD'],ddays
+              continue
+        print "Keeping:",mjd,head['MJD'],ddays
+        fits = fitsio.FITS(fname)
+        flux = fits[0].read()[fiber-1]
+        ivar = fits[1].read()[fiber-1]
+        andmask = fits[2].read()[fiber-1]
+        ormask = andmask
+        loglam = fits[3].read()[fiber-1]
+        dtype=[('loglam','f4'),('flux','f4'),('ivar','f4'),('andmask','i4'),('ormask','i4')]
+        N=len(flux)
+        ar=np.zeros(N,dtype=dtype)
+        ar['loglam']=loglam
+        ar['flux']=flux
+        ar['ivar']=ivar
+        ar['andmask']=andmask
+        ar['ormask']=ormask
+        arl.append(ar)
+    return arl
 
 

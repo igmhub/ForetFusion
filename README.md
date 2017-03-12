@@ -24,8 +24,10 @@ or to leaving things within your own area on e.g. NERSC:
 Then the driver should be run like this, specifying config file
 
 ```
-mpirun -np 4 ./exec/ff_driver.py config/nersc.ini
+./exec/ff_driver.py config/nersc.ini
 ```
 
+Multiprocessing is supporter either by MPI or by multiprocessing module. See config file.
+Config file format should be fairly self-explanatory.
 
 

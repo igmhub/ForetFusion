@@ -30,7 +30,6 @@ def loadDRQandPixelize():
         w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
         drq=drq[w]
         print "We have ",len(drq)," quasars after filtering."
-        print st.min_z, st.max_z
         w=np.where((drq['Z']>st.min_z) & (drq['Z']<st.max_z))
         drq=drq[w]
         print "we have", len(drq)," quasars after z filtering."

@@ -22,7 +22,8 @@ def automatic ():
                 processPixel(pixinfo)
     
 def loadDRQandPixelize():
-    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z']
+    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z',
+                   'N_SPEC_SDSS','N_SPEC_BOSS', 'PLATE_DUPLICATE', 'MJD_DUPLICATE','FIBERID_DUPLICATE']
     if st.rank == 0:
         drq = io.read_fits(st.DRQ, spall_cols, st.maxNobj)
         ## first filter for quasars
@@ -39,7 +40,7 @@ def loadDRQandPixelize():
         # find unique pixels
         uniqpix=set(pixs)
         print "We have ",len(uniqpix),"unique pixels."
-        print "We have ",len(drq), "observations with ", len(set(drq['THING_ID'])), " unique thing ids."
+        print "We have ",len(set(drq['THING_ID'])), " unique thing ids."
         outlist=[]
         for pix in uniqpix:
             # first find which one belong to this pixel
@@ -48,6 +49,10 @@ def loadDRQandPixelize():
             mjd=drq['MJD'][w]
             plate=drq['PLATE'][w]
             fiber=drq['FIBERID'][w]
+            extra=drq['N_SPEC_SDSS']+drq['N_SPEC_BOSS']
+            mjddup=drq['MJD_DUPLICATE']
+            platedup=drq['PLATE_DUPLICATE']
+            fiberdup=drq['FIBERID_DUPLICATE']
             ## now find unique tids
             uniqtids=set(tids)
             # so now make triplets sorted by thing id.
@@ -55,8 +60,14 @@ def loadDRQandPixelize():
             for ctid in uniqtids:
                 obslist=[]
                 cw=np.where(tids==ctid)
-                for p,m,f in zip(plate[cw], mjd[cw], fiber[cw]):
+                for p,m,f,e,pd,md,fd in zip(plate[cw], mjd[cw], fiber[cw],
+                                extra[cw],platedup[cw],mjddup[cw],fiberdup[cw]):
                     obslist.append((p,m,f))
+                    if e>0:
+                        print '-'
+                        for p,m,f in zip(pd[1:2*e+1:2],md[1:2*e+1:2],fd[1:2*e+1:2]):
+                            print p,m,f,'D'
+                            obslist.append((p,m,f))
                 pixlist.append((ctid,obslist))
             outlist.append((pix,pixlist))
         saveMasterFile (outlist)

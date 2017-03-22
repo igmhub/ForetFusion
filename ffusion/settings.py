@@ -27,7 +27,7 @@ def updateSettings(config):
     useMultiprocessing=config.getint("Main", "Multiprocessing")
     if useMPI and useMultiprocessing:
         print "Cannot have both MPI and multiprocessing"
-    spPlate_dir=config.get("Input","DRQ")
+    DRQ=config.get("Input","DRQ")
     spPlate_dir=config.get("Input","spPlate_dir")
     use_spCFrame=config.getboolean("Input","use_spCFrame")
     maxNobj=config.getint("Input","maxNobj")

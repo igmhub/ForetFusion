@@ -40,6 +40,40 @@ def read_spplate(dir_fits, triplet):
     ar['ormask']=ormask
     return ar
 
+def read_spec(dir_fits, triplet,mock=False):
+    plate,mjd,fiber=triplet
+    prefix="spec"
+    if mock:
+        prefix="mock"
+    sfib="%i"%fiber
+    if fiber<10:
+        sfib="0"+sfib
+    if fiber<100:
+        sfib="0"+sfib
+    if fiber<1000:
+        sfib="0"+sfib
+    ext="fits"
+    if mock:
+        ext="fits.gz"
+    fname=dir_fits+"/%i/%s-%i-%i-%s.%s"%(plate,prefix,plate,mjd,sfib,ext)
+    if not os.path.isfile(fname):
+        print('File not found: {}'.format(fname))
+        sys.exit(1)
+    fits       = fitsio.FITS(fname)
+    flux = fits[1]["flux"][:]
+    ivar = fits[1]["ivar"][:]
+    andmask = fits[1]["and_mask"][:]
+    ormask = np.zeros(len(andmask),dtype=bool)
+    loglam = fits[1]["loglam"][:]
+    dtype=[('loglam','f4'),('flux','f4'),('ivar','f4'),('andmask','i4'),('ormask','i4')]
+    N=len(flux)
+    ar=np.zeros(N,dtype=dtype)
+    ar['loglam']=loglam
+    ar['flux']=flux
+    ar['ivar']=ivar
+    ar['andmask']=andmask
+    ar['ormask']=ormask
+    return ar
 
 def read_spcframe(dir_fits, triplet):
     plate,mjd,fiber=triplet

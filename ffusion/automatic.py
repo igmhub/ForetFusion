@@ -97,8 +97,10 @@ def processPixel(pixinfo):
         am=np.zeros(Np,dtype='i4')
         om=np.zeros(Np,dtype='i4')
         for tc,trip in enumerate(subl):
-            if st.use_spCFrame:
-                lar=io.read_spcframe(st.spPlate_dir,trip)
+            if st.use_spec:
+                lar=[io.read_spec(st.spPlate_dir,trip,mock=st.mock)]
+            elif st.use_spCFrame:
+                lar=[io.read_spcframe(st.spPlate_dir,trip)]
             else:
                 lar=[io.read_spplate(st.spPlate_dir,trip)]
             for ar in lar:

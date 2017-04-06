@@ -71,7 +71,7 @@ def saveMasterFile (outlist):
     for pix, pixlist in outlist:
         for tid,trips in pixlist:
             for p,m,f in trips:
-                outl.append((pix,tid,p,m,f))
+                outl.append((tid,pix,p,m,f))
     outl=np.array(outl, dtype=[('THING_ID','i4'), ('PIX','i4'),('PLATE','i4'), ('MJD','i4'),('FIBER','i4')])
     file_name = os.path.join(st.rootdir, 'master.fits')
     fits = fitsio.FITS(file_name, 'rw', clobber=True)

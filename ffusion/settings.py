@@ -32,8 +32,11 @@ def updateSettings(config):
     DRQ=config.get("Input","DRQ")
     spPlate_dir=config.get("Input","spPlate_dir")
     use_spCFrame=config.getboolean("Input","use_spCFrame")
-    use_spec=config.getboolean("Input","use_spec")
-    mock=config.getboolean("Input","mock")
+    try:
+    	use_spec=config.getboolean("Input","use_spec")
+    	mock=config.getboolean("Input","mock")
+    except:
+        pass
     maxNobj=config.getint("Input","maxNobj")
     rootdir=config.get("Output","root")
     pix_dir=config.get("Output","pix_dir",raw=False)

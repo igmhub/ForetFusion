@@ -9,6 +9,7 @@ DRQ="/global/projecta/projectdirs/sdss/eBOSS/DR14Q_v1_1.fits"
 #spPlate_dir= '/global/projecta/projectdirs/sdss/staging/ebosswork/eboss/spectro/redux/v5_10_0/'
 spPlate_dir='/global/projecta/projectdirs/sdss/eBOSS/testFiles'
 use_spCFrame=False
+use_duplicates=False
 pix_dir=rootdir+"/pixs"
 min_z=0
 max_z=6
@@ -21,7 +22,7 @@ logl_step=1e-4
 def updateSettings(config):
     global useMPI, comm, rank, size, rootdir, DRQ, spPlate_dir, \
         pix_dir, maxNobj, Nside, logl_min, logl_max, logl_step,\
-        min_z, max_z, use_spCFrame, useMultiprocessing
+        min_z, max_z, use_spCFrame, use_duplicates, useMultiprocessing
     
     useMPI=config.getboolean("Main","MPI")
     useMultiprocessing=config.getint("Main", "Multiprocessing")
@@ -30,6 +31,7 @@ def updateSettings(config):
     spPlate_dir=config.get("Input","DRQ")
     spPlate_dir=config.get("Input","spPlate_dir")
     use_spCFrame=config.getboolean("Input","use_spCFrame")
+    use_duplicates=config.getboolean("Input","use_duplicates")
     maxNobj=config.getint("Input","maxNobj")
     rootdir=config.get("Output","root")
     pix_dir=config.get("Output","pix_dir",raw=False)

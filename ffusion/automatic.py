@@ -22,32 +22,39 @@ def automatic ():
                 processPixel(pixinfo)
     
 def loadDRQandPixelize():
-    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z']
+    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z',
+                   'N_SPEC_SDSS','N_SPEC_BOSS', 'PLATE_DUPLICATE', 'MJD_DUPLICATE','FIBERID_DUPLICATE']
     if st.rank == 0:
         drq = io.read_fits(st.DRQ, spall_cols, st.maxNobj)
         ## first filter for quasars
         #w=np.where(drq['CLASS']=="QSO" & (drq['OBJTYPE']=='QSO' | drq['OBJTYPE']=='QSO') & drq['THING_ID']!=-1)
         w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
         drq=drq[w]
-        print "We have ",len(drq)," quasars after filtering."
+        print "We have ",len(drq)," lines after filtering."
         w=np.where((drq['Z']>st.min_z) & (drq['Z']<st.max_z))
         drq=drq[w]
-        print "we have", len(drq)," quasars after z filtering."
+        print "we have", len(drq)," lines after z filtering."
         phi_rad   = lambda ra : ra*np.pi/180.
         theta_rad = lambda dec: (90.0 - dec)*np.pi/180.
         pixs = hp.ang2pix(st.Nside, theta_rad(drq['DEC']), phi_rad(drq['RA']))
         # find unique pixels
         uniqpix=set(pixs)
         print "We have ",len(uniqpix),"unique pixels."
-        print "We have ",len(drq), "observations with ", len(set(drq['THING_ID'])), " unique thing ids."
+        print "We have ",len(set(drq['THING_ID'])), " unique thing ids."
         outlist=[]
+        dup=0
         for pix in uniqpix:
             # first find which one belong to this pixel
             w=np.where(pixs==pix)
-            tids=drq['THING_ID'][w] ## these are my thing ids
-            mjd=drq['MJD'][w]
-            plate=drq['PLATE'][w]
-            fiber=drq['FIBERID'][w]
+            drqc=drq[w] ## these are my thing ids
+            tids=drqc['THING_ID'] 
+            mjd=drqc['MJD']
+            plate=drqc['PLATE']
+            fiber=drqc['FIBERID']
+            extra=drqc['N_SPEC_SDSS']+drqc['N_SPEC_BOSS']
+            mjddup=drqc['MJD_DUPLICATE']
+            platedup=drqc['PLATE_DUPLICATE']
+            fiberdup=drqc['FIBERID_DUPLICATE']
             ## now find unique tids
             uniqtids=set(tids)
             # so now make triplets sorted by thing id.
@@ -55,10 +62,16 @@ def loadDRQandPixelize():
             for ctid in uniqtids:
                 obslist=[]
                 cw=np.where(tids==ctid)
-                for p,m,f in zip(plate[cw], mjd[cw], fiber[cw]):
+                for p,m,f,e,pd,md,fd in zip(plate[cw], mjd[cw], fiber[cw],
+                                extra[cw],platedup[cw],mjddup[cw],fiberdup[cw]):
                     obslist.append((p,m,f))
+                    if e>0 and st.use_duplicates:
+                        for p,m,f in zip(pd[1:2*e+1:2],md[1:2*e+1:2],fd[1:2*e+1:2]): ## note bug in DR14
+                            dup+=1
+                            obslist.append((p,m,f))
                 pixlist.append((ctid,obslist))
             outlist.append((pix,pixlist))
+        print "Duplicates used:",dup
         saveMasterFile (outlist)
     else:
         outlist=[]

@@ -20,9 +20,9 @@ def read_fits(file_name, fits_cols, maxnum=0):
 def read_spplate(dir_fits, triplet):
     plate,mjd,fiber=triplet
     fname=dir_fits+"/%i/spPlate-%i-%i.fits"%(plate,plate,mjd)
-    if not os.path.isfile(fname):
-        print('File not found: {}'.format(fname))
-        sys.exit(1)
+#    if not os.path.isfile(fname):
+#        print('File not found: {}'.format(fname))
+#        sys.exit(1)
     fits       = fitsio.FITS(fname)
     flux = fits[0].read()[fiber-1]
     ivar = fits[1].read()[fiber-1]

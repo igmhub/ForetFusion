@@ -97,12 +97,15 @@ def processPixel(pixinfo):
         am=np.zeros(Np,dtype='i4')
         om=np.zeros(Np,dtype='i4')
         for tc,trip in enumerate(subl):
-            if st.use_spec:
-                lar=[io.read_spec(st.spPlate_dir,trip,mock=st.mock)]
-            elif st.use_spCFrame:
-                lar=[io.read_spcframe(st.spPlate_dir,trip)]
-            else:
-                lar=[io.read_spplate(st.spPlate_dir,trip)]
+            try:
+                if st.use_spec:
+                    lar=[io.read_spec(st.spPlate_dir,trip,mock=st.mock)]
+                elif st.use_spCFrame:
+                    lar=[io.read_spcframe(st.spPlate_dir,trip)]
+                else:
+                    lar=[io.read_spplate(st.spPlate_dir,trip)]
+            except:
+                continue
             for ar in lar:
                 ndx=np.array([int(v) for v in ((ar['loglam']-st.logl_min)/st.logl_step+0.5)])
                 wf=np.where((ndx>=0) & (ndx<len(fl)))

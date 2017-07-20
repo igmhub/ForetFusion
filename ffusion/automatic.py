@@ -22,8 +22,8 @@ def automatic ():
                 processPixel(pixinfo)
     
 def loadDRQandPixelize():
-    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z',
-                   'N_SPEC_SDSS','N_SPEC_BOSS', 'PLATE_DUPLICATE', 'MJD_DUPLICATE','FIBERID_DUPLICATE']
+    spall_cols  = ['RA','DEC','THING_ID','MJD','PLATE','FIBERID','Z_VI',
+                   'NSPEC_BOSS', 'PLATE_DUPLICATE', 'MJD_DUPLICATE','FIBERID_DUPLICATE']
     if st.rank == 0:
         drq = io.read_fits(st.DRQ, spall_cols, st.maxNobj)
         ## first filter for quasars
@@ -31,7 +31,7 @@ def loadDRQandPixelize():
         w=np.where(drq['THING_ID']>0) #note we have both 0s and -1s
         drq=drq[w]
         print "We have ",len(drq)," lines after filtering."
-        w=np.where((drq['Z']>st.min_z) & (drq['Z']<st.max_z))
+        w=np.where((drq['Z_VI']>st.min_z) & (drq['Z_VI']<st.max_z))
         drq=drq[w]
         print "we have", len(drq)," lines after z filtering."
         phi_rad   = lambda ra : ra*np.pi/180.
@@ -51,7 +51,7 @@ def loadDRQandPixelize():
             mjd=drqc['MJD']
             plate=drqc['PLATE']
             fiber=drqc['FIBERID']
-            extra=drqc['N_SPEC_SDSS']+drqc['N_SPEC_BOSS']
+            extra=drqc['NSPEC_BOSS']
             mjddup=drqc['MJD_DUPLICATE']
             platedup=drqc['PLATE_DUPLICATE']
             fiberdup=drqc['FIBERID_DUPLICATE']
@@ -66,7 +66,8 @@ def loadDRQandPixelize():
                                 extra[cw],platedup[cw],mjddup[cw],fiberdup[cw]):
                     obslist.append((p,m,f))
                     if e>0 and st.use_duplicates:
-                        for p,m,f in zip(pd[1:2*e+1:2],md[1:2*e+1:2],fd[1:2*e+1:2]): ## note bug in DR14
+                        #for p,m,f in zip(pd[1:2*e+1:2],md[1:2*e+1:2],fd[1:2*e+1:2]): ## note bug in DR14
+                        for p,m,f in zip(pd[:e],md[:e],fd[:e]):
                             dup+=1
                             obslist.append((p,m,f))
                 pixlist.append((ctid,obslist))
